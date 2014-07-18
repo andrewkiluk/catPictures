@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>#{get 'title' /}</title>
+        <meta charset="${_response_encoding}">
+        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/main.css'}">
+        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/bootstrap.css'}" />
+        #{get 'moreStyles' /}
+        <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="@{'/public/javascripts/bootstrap.js'}"></script>
+        
+        #{get 'moreScripts' /}
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+          <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Cat Pictures</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                <li id="navbarHome"><a href="/">Home</a></li>
+                <li id="navbarAccount"><a href="account">Account</a></li>
+              </ul>
+
+              <!-- The login and user data component -->
+              #{if loggedIn == "true"}
+              <ul class="nav navbar-nav navbar-right">
+                <li><a>Welcome, ${fullname}!</a></li>
+                <li id="navbarLogout"><a href="/logout">Log out</a></li>
+              </ul>
+              #{/if}
+              #{else}
+              <form class="navbar-form navbar-right" method="post" action="/login">
+                <div class="form-group">
+                  <input type="text" class="form-control" name="username" placeholder="Username">
+                  <input type="password" class="form-control" name="password" placeholder="Password">
+                </div>
+                <button type="submit" method="post" class="btn btn-default">Login</button>
+                <a href="/register" class="btn btn-default">Register</a>
+              </form>
+              
+              #{/else}
+            </div><!-- /.navbar-collapse -->
+          </div><!-- /.container-fluid -->
+        </nav>
+
+        #{doLayout /}
+    </body>
+</html>

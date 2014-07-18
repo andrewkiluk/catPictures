@@ -1,0 +1,250 @@
+#{extends 'main.html' /}
+#{set title:'Cat Pictures' /}
+<div class="container">
+	<div class="row">
+	    <div class="contacts"> 
+	    	#{if loggedIn=="true"}
+			#{if currentUser && currentUser.contacts.size() > 0}
+		        
+		        <h3 class="text-center">Drag files onto the boxes to email your friends.</h3>
+				<br/>
+		    	%{index = 0;
+				  index++; }%
+		    	#{if index % 2 == 0}
+		    	EVEN!
+		    	#{/if}
+		    	#{if index % 2 == 0}
+		    	ODD!
+		    	#{/if}
+		        #{list items:currentUser.contacts, as:'contact'}
+			        <div id=${"drophandler_" + contact_index} class="well col-md-8 col-md-offset-2 text-center drophandler" contact_fullname="${contact.fullname}" contact_email="${contact.email}"> <h4>${contact.fullname} </h4> </div>
+			        <div class="row email_button_row" hidden><div class="col-md-8 col-md-offset-2 text-center"><br/><a href="${'/email/' + contact.email + '/' + contact.fullname}" class="btn btn-default">Email!</a><br/><br/></div></div>
+		        #{/list}
+		        
+		    #{/if}
+		    #{else}
+		    	<h3 class="text-center">You have no contacts!</h3>
+		    	<p class="text-center">Go to your accounts page to add some.</p>
+		    #{/else}
+		#{/if}
+		#{else}
+			<p>Please log in or register an account.</p>
+		#{/else}
+	    </div>
+	</div>
+</div>
+
+<script>
+$(navbarHome).addClass("active");
+
+function sendFileToServer(formData,filename,status,obj)
+{
+    var uploadURL ="upload"+ "/" + obj.attr("contact_email") + "/" + obj.attr("contact_fullname") + "/" + filename; //Upload URL
+    var extraData ={}; //Extra Data.
+    var jqXHR=$.ajax({
+        xhr: function() {
+            var xhrobj = $.ajaxSettings.xhr();
+            if (xhrobj.upload) {
+                xhrobj.upload.addEventListener('progress', function(event) {
+                    var percent = 0;
+                    var position = event.loaded || event.position;
+                    var total = event.total;
+                    if (event.lengthComputable) {
+                        percent = Math.ceil(position / total * 100);
+                    }
+                    //Set progress
+                    status.setProgress(percent);
+                }, false);
+            }
+            return xhrobj;
+        },
+        url: uploadURL,
+        type: "POST",
+        contentType:false,
+        processData: false,
+        cache: false,
+        data: formData,
+        success: function(data){
+            status.setProgress(100);
+ 
+            $("#status1").append("File upload Done<br>");         
+        }
+    }); 
+ 
+    status.setAbort(jqXHR);
+}
+ 
+var rowCount=0;
+function createStatusbar(obj)
+{
+     rowCount++;
+     var row="odd";
+     if(rowCount %2 ==0) row ="even";
+     this.statusbar = $("<div class='statusbar "+row+"'></div>");
+     this.filename = $("<div class='filename'></div>").appendTo(this.statusbar);
+     this.size = $("<div class='filesize'></div>").appendTo(this.statusbar);
+     this.progressBar = $("<div class='progressBar'><div></div></div>").appendTo(this.statusbar);
+     this.abort = $("<div class='abort'>Abort</div>").appendTo(this.statusbar);
+     obj.after(this.statusbar);
+
+    this.setFileNameSize = function(name,size)
+    {
+        var sizeStr="";
+        var sizeKB = size/1024;
+        if(parseInt(sizeKB) > 1024)
+        {
+            var sizeMB = sizeKB/1024;
+            sizeStr = sizeMB.toFixed(2)+" MB";
+        }
+        else
+        {
+            sizeStr = sizeKB.toFixed(2)+" KB";
+        }
+ 
+        this.filename.html(name);
+        this.size.html(sizeStr);
+    }
+    this.setProgress = function(progress)
+    {       
+        var progressBarWidth =progress*this.progressBar.width()/ 100;  
+        this.progressBar.find('div').animate({ width: progressBarWidth }, 10).html(progress + "% ");
+        if(parseInt(progress) >= 100)
+        {
+            this.abort.hide();
+        }
+    }
+    this.setAbort = function(jqxhr)
+    {
+        var sb = this.statusbar;
+        this.abort.click(function()
+        {
+            jqxhr.abort();
+            sb.hide();
+        });
+    }
+}
+function createLinkStatusbar(obj)
+{
+     rowCount++;
+     var row="odd";
+     if(rowCount %2 ==0) row ="even";
+     this.statusbar = $("<div class='statusbar "+row+"'></div>");
+     this.filename = $("<div class='linkname'></div>").appendTo(this.statusbar);
+     this.size = $("<div class='filesize'></div><br/><br/>").appendTo(this.statusbar);
+     obj.after(this.statusbar);
+
+    this.setFileNameSize = function(name,size)
+    {
+        // For linked images, we'll have the size field just say say "Link"
+ 
+        this.filename.html(name);
+        this.size.html(size);
+    }
+    this.setProgress = function()
+    {       
+        var progress = 100;
+        var progressBarWidth =progress*this.progressBar.width()/ 100;  
+        this.abort.hide();
+
+    }
+    this.setAbort = function(jqxhr)
+    {
+        var sb = this.statusbar;
+        this.abort.click(function()
+        {
+            jqxhr.abort();
+            sb.hide();
+        });
+    }
+}
+function handleFileUpload(files,obj)
+{
+   for (var i = 0; i < files.length; i++) 
+   {
+        var fd = new FormData();
+        fd.append('file', files[i]);
+
+        console.log("gogo");
+        var status = new createStatusbar(obj); //Using this we can set progress.
+        status.setFileNameSize(files[i].name,files[i].size);
+        sendFileToServer(fd,files[i].name,status,obj);
+        console.log("gogogo");
+ 
+   }
+}
+
+
+// Set up upload on drag events.
+
+var $wells = $(".well");
+$wells.on('dragenter', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+    $(this).css('border', '1px solid #0B85A1');
+});
+$wells.on('dragover', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+});
+$wells.on('drop', function (e) 
+{
+    $(".well").css('border', '1px solid #e3e3e3');
+    e.preventDefault();
+    var files = e.originalEvent.dataTransfer.files;
+    if (files.length > 0){
+        // We need to send dropped files to Server
+        var dropHandlerId = $(this).attr('id');
+        handleFileUpload(files,$(this));
+        $(this).nextAll(".email_button_row").first().show();
+    }
+
+    else if (getImageUrlFromDropEvent(e)){
+        // No file attached, an image link was dropped
+        console.log(getImageUrlFromDropEvent(e));
+        $(this).nextAll(".email_button_row").first().show();
+        // Then do stuff!
+
+        // We need to call a POST request here to add the link to the list $(this)
+        var postURL ="attachLink"+ "/" + $(this).attr("contact_email") + "/" + $(this).attr("contact_fullname");
+        $.post( postURL , getImageUrlFromDropEvent(e));
+
+        var status = new createLinkStatusbar($(this)); //Using this we can set progress.
+        status.setFileNameSize(getImageUrlFromDropEvent(e),"Link");
+
+    }
+    
+});
+
+function getImageUrlFromDropEvent(e) {
+	var temp = e.originalEvent.dataTransfer.getData('URL');
+    // var temp = e.originalEvent.dataTransfer.getData('text/html');
+    // var index = temp.indexOf('\"');
+    // temp = temp.substring(index+1);
+    // index = temp.indexOf('\"');
+    // temp = temp.substring(0, index);
+    return temp;
+}
+
+
+// Prevent mis-drags from navigating the window
+
+$(document).on('dragenter', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+});
+$(document).on('dragover', function (e) 
+{
+  e.stopPropagation();
+  e.preventDefault();
+  $wells.css('border', '1px dotted #0B85A1');
+});
+$(document).on('drop', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+    $(".well").css('border', '1px solid #e3e3e3');
+});
+</script>

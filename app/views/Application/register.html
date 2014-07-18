@@ -1,0 +1,23 @@
+#{extends 'main.html' /}
+#{set title:'Register for Cat Pictures' /}
+<div class="container">
+	<div class="row">
+		<form class="col-md-4 col-md-offset-4" method="post" action="/register">
+      <div class="form-group">
+      	<br/>
+      	#{ifErrors}
+ 						<h1>Oops…</h1>
+ 					#{errors}
+       			<li>${error}</li>
+   				#{/errors}
+   			#{/ifErrors}
+      	<br/>
+        <input type="text" class="form-control" name="username" placeholder="Username" value="${flash.username}"><br/>
+        <input type="text" class="form-control" name="fullname" placeholder="Actual Name" value="${flash.fullname}"><br/>
+        <input type="password" class="form-control" name="password" placeholder="Password" value="${flash.password}"><br/>
+        <input type="password" class="form-control" name="password_confirm" placeholder="Confirm Password" value="${flash.password_confirm}"><br/>
+      </div>
+      <button type="submit" method="post" class="btn btn-default">Register</button>
+    </form>
+	</div>
+</div>

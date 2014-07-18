@@ -1,0 +1,29 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                                       					Application.index
+
+# Account stuff
+GET     /account                                					Application.account
+GET     /register                       					        Application.register
+POST    /register                   					            Application.newRegister
+POST    /newContact              					               	Application.newContact
+POST    /login                   					               	Application.login
+GET     /logout                            						    Application.logout
+DELETE  /deleteContact/{email}/{fullname}							Application.deleteContact
+
+# Core app
+GET		/email/{contact_email}/{contact_fullname}					Application.email
+POST 	/upload/{contact_email}/{contact_fullname}/{filename}		Application.upload
+POST	/attachLink/{contact_email}/{contact_fullname}				Application.attachLink
+
+# Ignore favicon requests
+GET     /favicon.ico                            					404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                					staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  					{controller}.{action}
