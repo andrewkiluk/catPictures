@@ -25,34 +25,37 @@ import play.mvc.Controller;
 
 public class Application extends Controller {
 
-	@OnApplicationStart
-	public class Bootstrap extends Job {
+    @OnApplicationStart
+    public class Bootstrap extends Job {
 
-	    public void doJob() {
-	        User currentUser = new User("tester", "secure", "Testy McTesterson").save();
-	    	currentUser.addContact("iknow@nothing.com", "Jon");
-	    	currentUser.addContact("samandgilly@4eva.com", "Sam");
-	    	currentUser.addContact("xnoscope420x@northofthewall.com", "Ygritte");
-	    }    
-	}
+        public void doJob() {
+            User currentUser = new User("tester", "secure", "Testy McTesterson").save();
+            currentUser.addContact("iknow@nothing.com", "Jon");
+            currentUser.addContact("samandgilly@4eva.com", "Sam");
+            currentUser.addContact("xnoscope420x@northofthewall.com", "Ygritte");
+        }    
+    }
 
-	@Before
-	static void addDefaults() {
-	    String username = session.get("username");
-	    String loggedIn = session.get("loggedIn");
+    @Before
+    static void addDefaults() {
+        String username = session.get("username");
+        String loggedIn = session.get("loggedIn");
         User currentUser = User.connect(session.get("username"), session.get("password"));
-	    renderArgs.put("username", username);
-        renderArgs.put("fullname", currentUser.fullname);
-	    renderArgs.put("loggedIn", loggedIn);
-        renderArgs.put("currentUser", currentUser);
-	}
+        if(currentUser != null){
+            renderArgs.put("username", username);
+            renderArgs.put("fullname", currentUser.fullname);
+            renderArgs.put("currentUser", currentUser);
+        }
+        renderArgs.put("loggedIn", loggedIn);
+        
+    }
 
     public static void index() {
-    	render();
+        render();
     }
 
     public static void account() {
-    	render();
+        render();
     }
 
     public static void attachLink(String contact_email, String contact_fullname) {
@@ -218,73 +221,73 @@ public class Application extends Controller {
 
 
     public static void login() {
-    	String username = params.get("username");
-    	String password = params.get("password");
-    	User currentUser = User.connect(username, password);
-    	if(currentUser == null){
-    		// Error, authentication failed.
-    	}
-    	else if(currentUser != null){
-    		Logger.info(currentUser.fullname);
-    		session.put("loggedIn", "true");
-    		session.put("username", username);
-    		session.put("password", password);
-    		renderArgs.put("loggedIn", "true");
-    		renderArgs.put("username", username);
-    		renderArgs.put("password", password);
-    		renderArgs.put("currentUser", currentUser);
-    	}
-     	index();
+        String username = params.get("username");
+        String password = params.get("password");
+        User currentUser = User.connect(username, password);
+        if(currentUser == null){
+            // Error, authentication failed.
+        }
+        else if(currentUser != null){
+            Logger.info(currentUser.fullname);
+            session.put("loggedIn", "true");
+            session.put("username", username);
+            session.put("password", password);
+            renderArgs.put("loggedIn", "true");
+            renderArgs.put("username", username);
+            renderArgs.put("password", password);
+            renderArgs.put("currentUser", currentUser);
+        }
+        index();
     }
 
     public static void logout() {
-		session.put("loggedIn", "false");
-		renderArgs.put("loggedIn", "false");
-     	index();
+        session.put("loggedIn", "false");
+        renderArgs.put("loggedIn", "false");
+        index();
     }
 
     public static void register() {
-    	render();
+        render();
     }
 
     // Create a new account
     public static void newRegister() {
-    	String username = params.get("username");
-    	String fullname = params.get("fullname");
-    	String password = params.get("password");
-    	String password_confirm = params.get("password_confirm");
-    	validation.clear();
-    	validation.required(username).message("Choose a username.");
-    	validation.required(fullname).message("We need your name.");
-    	validation.required(password).message("Please enter a password");
-    	validation.required(password_confirm).message("Please confirm your password");
-    	if(User.find("byUsername", username).first() != null) {
-		    validation.addError("username_taken", "This username already in use.");
-		}
-		if(!password.equals(password_confirm)){
-    		validation.addError("password_match", "The passwords given do not match.");
-    	}
-    	if(validation.hasErrors()) {
-        	for(play.data.validation.Error error : validation.errors()) {
-            	System.out.println(error.message());
-        	}
-        	params.flash();
-        	validation.keep();
-        	register();
-     	}
-    	
-    	else{
-    		User currentUser = new User(username, password, fullname).save();
-    		Logger.info(currentUser.fullname);
-    		session.put("loggedIn", "true");
-    		session.put("username", username);
-    		session.put("password", password);
-    		renderArgs.put("loggedIn", "true");
-    		renderArgs.put("username", username);
-    		renderArgs.put("password", password);
-    		renderArgs.put("currentUser", currentUser);
-    	}
-    	index();
+        String username = params.get("username");
+        String fullname = params.get("fullname");
+        String password = params.get("password");
+        String password_confirm = params.get("password_confirm");
+        validation.clear();
+        validation.required(username).message("Choose a username.");
+        validation.required(fullname).message("We need your name.");
+        validation.required(password).message("Please enter a password");
+        validation.required(password_confirm).message("Please confirm your password");
+        if(User.find("byUsername", username).first() != null) {
+            validation.addError("username_taken", "This username already in use.");
+        }
+        if(!password.equals(password_confirm)){
+            validation.addError("password_match", "The passwords given do not match.");
+        }
+        if(validation.hasErrors()) {
+            for(play.data.validation.Error error : validation.errors()) {
+                System.out.println(error.message());
+            }
+            params.flash();
+            validation.keep();
+            register();
+        }
+        
+        else{
+            User currentUser = new User(username, password, fullname).save();
+            Logger.info(currentUser.fullname);
+            session.put("loggedIn", "true");
+            session.put("username", username);
+            session.put("password", password);
+            renderArgs.put("loggedIn", "true");
+            renderArgs.put("username", username);
+            renderArgs.put("password", password);
+            renderArgs.put("currentUser", currentUser);
+        }
+        index();
     }
 
 }
