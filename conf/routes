@@ -2,22 +2,20 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /                                       					Application.index
-
-# Account stuff
-GET     /account                                					Application.account
-GET     /register                       					        Application.register
-POST    /register                   					            Application.newRegister
-POST    /newContact              					               	Application.newContact
-POST    /login                   					               	Application.login
-GET     /logout                            						    Application.logout
-DELETE  /deleteContact/{email}/{fullname}							Application.deleteContact
-
 # Core app
+GET     /                                       					Application.index
 GET		/email/{contact_email}/{contact_fullname}					Application.email
 POST 	/upload/{contact_email}/{contact_fullname}/{filename}		Application.upload
 POST	/attachLink/{contact_email}/{contact_fullname}				Application.attachLink
+
+# Account functions
+GET     /account                                					Account.accountPage
+GET     /register                       					        Account.register
+POST    /register                   					            Account.newRegister
+POST    /newContact              					               	Account.newContact
+POST    /login                   					               	Account.login
+GET     /logout                            						    Account.logout
+DELETE  /deleteContact/{email}/{fullname}							Account.deleteContact
 
 # Ignore favicon requests
 GET     /favicon.ico                            					404
